@@ -1,11 +1,11 @@
-# 🖊️ Classificador de Dígitos Manuscritos — MLP + MNIST
+# Classificador de Dígitos Manuscritos — MLP + MNIST
 
 Atividade da disciplina de **Introdução a Redes Neurais Artificiais**.  
 Implementação de um Perceptron Multicamadas (MLP) para reconhecimento de dígitos manuscritos (0–9), com interface interativa para desenhar e classificar dígitos em tempo real.
 
 ---
 
-## 📋 Sobre o Projeto
+## Sobre o Projeto
 
 O modelo é treinado no dataset **MNIST**, que contém 70.000 imagens em escala de cinza (28×28 pixels) de dígitos escritos à mão:
 - **60.000** imagens para treino
@@ -15,7 +15,7 @@ Após o treinamento, uma interface web é aberta no navegador onde o usuário po
 
 ---
 
-## 🧠 Arquitetura da Rede
+## Arquitetura da Rede
 
 ```
 Entrada: 784 neurônios (28×28 pixels achatados)
@@ -32,7 +32,7 @@ Saída: 10 neurônios + Softmax (dígitos 0–9)
 
 ---
 
-## 📊 Resultados
+## Resultados
 
 | Métrica | Valor |
 |---|---|
@@ -42,7 +42,7 @@ Saída: 10 neurônios + Softmax (dígitos 0–9)
 
 ---
 
-## 🗂️ Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 📁 redes_neurais/
@@ -53,7 +53,7 @@ Saída: 10 neurônios + Softmax (dígitos 0–9)
 
 ---
 
-## ▶️ Como Executar
+## Como Executar
 
 **1. Instalar dependências:**
 ```bash
@@ -73,17 +73,17 @@ O script vai automaticamente:
 
 ---
 
-## 🖥️ Interface Interativa
+## Interface Interativa
 
 Após o treinamento, o navegador abre com um canvas onde você pode:
-- ✏️ Desenhar um dígito com o mouse (ou toque no celular)
-- ▶️ Clicar em **Classificar** (ou pressionar `Enter`)
-- 📊 Ver a probabilidade para cada dígito (0–9)
-- ✕ Limpar o canvas (ou pressionar `Esc`)
+- Desenhar um dígito com o mouse (ou toque no celular)
+- Clicar em **Classificar** (ou pressionar `Enter`)
+- Ver a probabilidade para cada dígito (0–9)
+- Limpar o canvas (ou pressionar `Esc`)
 
 ---
 
-## 🔗 Referências
+## Referências
 
 - [MNIST Classification using Multilayer Perceptron — Kaggle](https://www.kaggle.com/code/jonathankristanto/mnist-classification-using-multilayer-perceptron)
 - [Digit Recognizer — Kaggle Competition](https://www.kaggle.com/c/digit-recognizer/data)
