@@ -11,11 +11,13 @@
   <img src="https://img.shields.io/badge/HTML-Visualizacao-yellowgreen?logo=pygame" alt="Pygame"/>
 </p>
 
+<p align="center">
 Implementação de um Perceptron Multicamadas (MLP) para reconhecimento de dígitos manuscritos (0–9), com interface interativa para desenhar e classificar dígitos em tempo real.
+</p>
 
 ---
 
-## Sobre o Projeto
+## 1. Sobre o Projeto
 
 O modelo é treinado no dataset **MNIST**, que contém 70.000 imagens em escala de cinza (28×28 pixels) de dígitos escritos à mão:
 - **60.000** imagens para treino
@@ -25,7 +27,7 @@ Após o treinamento, uma interface web é aberta no navegador onde o usuário po
 
 ---
 
-## Arquitetura da Rede
+## 2. Arquitetura da Rede
 
 ```
 Entrada: 784 neurônios (28×28 pixels achatados)
@@ -42,7 +44,7 @@ Saída: 10 neurônios + Softmax (dígitos 0–9)
 
 ---
 
-## Resultados
+## 3. Resultados
 
 | Métrica | Valor |
 |---|---|
@@ -52,7 +54,7 @@ Saída: 10 neurônios + Softmax (dígitos 0–9)
 
 ---
 
-## Estrutura do Projeto
+## 4. Estrutura do Projeto
 
 ```
 📁 redes_neurais/
@@ -63,7 +65,7 @@ Saída: 10 neurônios + Softmax (dígitos 0–9)
 
 ---
 
-## Como Executar
+## 5. Como Executar
 
 **1. Instalar dependências:**
 ```bash
@@ -83,7 +85,7 @@ O script vai automaticamente:
 
 ---
 
-## Interface Interativa
+## 6. Interface Interativa
 
 Após o treinamento, o navegador abre com um canvas onde você pode:
 - Desenhar um dígito com o mouse (ou toque no celular)
@@ -93,7 +95,7 @@ Após o treinamento, o navegador abre com um canvas onde você pode:
 
 ---
 
-## Referências
+## 7. Referências
 
 - [MNIST Classification using Multilayer Perceptron — Kaggle](https://www.kaggle.com/code/jonathankristanto/mnist-classification-using-multilayer-perceptron)
 - [Digit Recognizer — Kaggle Competition](https://www.kaggle.com/c/digit-recognizer/data)
