@@ -1,0 +1,259 @@
+<!-- ── Página HTML (embutida no script) ──────────────────────────── HTML_PAGINA = r"""-->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classificador de Dígitos — MLP MNIST</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 40px;
+    }
+    h1 { font-size: 1.65rem; color: #f8fafc; margin-bottom: 4px; }
+    .subtitulo { color: #94a3b8; font-size: .88rem; margin-bottom: 28px; }
+
+    .painel {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 780px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 20px;
+      flex: 1;
+      min-width: 270px;
+    }
+    h2 { font-size: .98rem; color: #cbd5e1; margin-bottom: 14px; }
+
+    canvas {
+      display: block;
+      border-radius: 10px;
+      cursor: crosshair;
+      touch-action: none;
+      border: 2px solid #475569;
+      transition: border-color .2s;
+      max-width: 100%;
+    }
+    canvas:hover { border-color: #60a5fa; }
+
+    .botoes { display: flex; gap: 10px; margin-top: 12px; }
+    button {
+      flex: 1;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+    button:active { transform: scale(.97); }
+    #btnClassificar { background: #3b82f6; color: #fff; }
+    #btnLimpar      { background: #374151; color: #d1d5db; }
+
+    .resultado-centro { text-align: center; padding: 10px 0 16px; }
+    .digito-grande {
+      font-size: 5.5rem;
+      font-weight: 900;
+      color: #60a5fa;
+      line-height: 1;
+    }
+    .confianca { color: #86efac; font-size: 1.05rem; margin-top: 4px; }
+
+    .barra-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: .82rem;
+    }
+    .barra-label { width: 16px; text-align: right; color: #94a3b8; font-weight: 600; }
+    .barra-bg {
+      flex: 1;
+      background: #0f172a;
+      border-radius: 4px;
+      height: 15px;
+      overflow: hidden;
+    }
+    .barra-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: #3b82f6;
+      transition: width .45s ease;
+    }
+    .barra-fill.destaque { background: #22c55e; }
+    .barra-pct { width: 44px; text-align: right; color: #cbd5e1; font-size: .8rem; }
+
+    .dica    { color: #64748b; font-size: .78rem; margin-top: 10px; text-align: center; }
+    #status  { min-height: 20px; font-size: .83rem; color: #fbbf24; margin-top: 8px; text-align: center; }
+    .atalhos { color: #475569; font-size: .76rem; text-align: center; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<h1>     Classificador de Dígitos Manuscritos</h1>
+<p class="subtitulo">Rede Neural MLP treinada no dataset MNIST — 60.000 exemplos</p>
+
+<div class="painel">
+
+  <!-- ── Área de desenho ─────────────────────────────────── -->
+  <div class="card" style="max-width:310px">
+    <h2>     Desenhe um dígito (0–9)</h2>
+    <canvas id="canvas" width="260" height="260"></canvas>
+    <div class="botoes">
+      <button id="btnClassificar" onclick="classificar()">   Classificar</button>
+      <button id="btnLimpar"      onclick="limpar()">✕ Limpar</button>
+    </div>
+    <p class="dica">Desenhe com traços largos no centro do quadro</p>
+    <p class="atalhos">Enter = classificar &nbsp;|&nbsp; Esc = limpar</p>
+    <p id="status"></p>
+  </div>
+
+  <!-- ── Painel de resultado ─────────────────────────────── -->
+  <div class="card" style="flex:1; min-width:250px">
+    <h2>     Dígito Reconhecido</h2>
+    <div class="resultado-centro">
+      <div class="digito-grande" id="digitoGrande">—</div>
+      <div class="confianca"     id="confiancaTxt"></div>
+    </div>
+
+    <h2 style="margin-top:14px">    Probabilidades por Classe</h2>
+    <div id="barras"></div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+const canvas   = document.getElementById("canvas");
+const ctx      = canvas.getContext("2d");
+const statusEl = document.getElementById("status");
+let desenhando = false;
+
+// ── Posição correta mesmo com zoom / scroll ──────────────────────
+function posNoCanvas(e) {
+  const rect   = canvas.getBoundingClientRect();
+  const escX   = canvas.width  / rect.width;
+  const escY   = canvas.height / rect.height;
+  const src    = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - rect.left) * escX,
+    y: (src.clientY - rect.top)  * escY
+  };
+}
+
+// ── Configuração do pincel ───────────────────────────────────────
+ctx.lineWidth   = 20;       // traço grosso ajuda o reconhecimento
+ctx.lineCap     = "round";
+ctx.lineJoin    = "round";
+ctx.strokeStyle = "#ffffff"; // branco sobre fundo preto (padrão MNIST)
+
+// ── Inicialização ────────────────────────────────────────────────
+function limpar() {
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  document.getElementById("digitoGrande").textContent = "—";
+  document.getElementById("confiancaTxt").textContent = "";
+  statusEl.textContent = "";
+  inicializarBarras();
+}
+limpar();
+
+// ── Eventos de mouse ─────────────────────────────────────────────
+canvas.addEventListener("mousedown", e => {
+  desenhando = true;
+  const p = posNoCanvas(e);
+  ctx.beginPath(); ctx.moveTo(p.x, p.y);
+});
+canvas.addEventListener("mousemove", e => {
+  if (!desenhando) return;
+  const p = posNoCanvas(e);
+  ctx.lineTo(p.x, p.y); ctx.stroke();
+});
+canvas.addEventListener("mouseup",    () => { desenhando = false; });
+canvas.addEventListener("mouseleave", () => { desenhando = false; });
+
+// ── Eventos de toque (celular / tablet) ─────────────────────────
+canvas.addEventListener("touchstart", e => {
+  e.preventDefault(); desenhando = true;
+  const p = posNoCanvas(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+}, { passive: false });
+canvas.addEventListener("touchmove", e => {
+  e.preventDefault(); if (!desenhando) return;
+  const p = posNoCanvas(e); ctx.lineTo(p.x, p.y); ctx.stroke();
+}, { passive: false });
+canvas.addEventListener("touchend", () => { desenhando = false; });
+
+// ── Atalhos de teclado ───────────────────────────────────────────
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter")  classificar();
+  if (e.key === "Escape" || e.key === "Delete") limpar();
+});
+
+// ── Barras de probabilidade ──────────────────────────────────────
+function inicializarBarras() {
+  const c = document.getElementById("barras");
+  c.innerHTML = "";
+  for (let i = 0; i < 10; i++) {
+    c.innerHTML += `
+      <div class="barra-row">
+        <span class="barra-label">${i}</span>
+        <div class="barra-bg">
+          <div class="barra-fill" id="bar${i}" style="width:0%"></div>
+        </div>
+        <span class="barra-pct" id="pct${i}">0.0%</span>
+      </div>`;
+  }
+}
+inicializarBarras();
+
+// ── Envia imagem ao servidor Python e exibe resultado ────────────
+async function classificar() {
+  statusEl.textContent = "⏳ Analisando...";
+  const imagemBase64 = canvas.toDataURL("image/png");
+
+  try {
+    const resp = await fetch("/classificar", {
+      method : "POST",
+      headers: { "Content-Type": "application/json" },
+      body   : JSON.stringify({ imagem: imagemBase64 })
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const d = await resp.json();
+
+    if (d.erro) { statusEl.textContent = "Erro " + d.erro; return; }
+
+    document.getElementById("digitoGrande").textContent = d.digito;
+    document.getElementById("confiancaTxt").textContent =
+      `Confiança: ${(d.confianca * 100).toFixed(1)}%`;
+    statusEl.textContent = "";
+
+    d.probabilidades.forEach((p, i) => {
+      const pct  = (p * 100).toFixed(1);
+      const fill = document.getElementById(`bar${i}`);
+      fill.style.width = pct + "%";
+      fill.className   = "barra-fill" + (i === d.digito ? " destaque" : "");
+      document.getElementById(`pct${i}`).textContent = pct + "%";
+    });
+
+  } catch (err) {
+    statusEl.textContent = "    Erro: " + err.message;
+  }
+}
+</script>
+</body>
+</html>
