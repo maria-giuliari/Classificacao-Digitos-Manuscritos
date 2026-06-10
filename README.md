@@ -1,7 +1,7 @@
 # Classificador de Dígitos Manuscritos — MLP + MNIST
 
 <p align="center">
-    <strong>Atividade de **Introdução a Redes Neurais Artificiais**</strong><br/>
+    <strong>Atividade de Introdução a Redes Neurais Artificiais</strong><br/>
     <strong>Inteligência Artificial — Católica SC</strong><br/>
   Mariele Vieira e Maria A. Giuliari
 </p>
@@ -9,7 +9,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.16-blue?logo=python" alt="Python"/>
   <img src="https://img.shields.io/badge/HTML-Visualizacao-yellowgreen?logo=pygame" alt="Pygame"/>
-  <img src="https://img.shields.io/badge/Algoritmo-A*-orange" alt="A* Search"/>
 </p>
 
 Implementação de um Perceptron Multicamadas (MLP) para reconhecimento de dígitos manuscritos (0–9), com interface interativa para desenhar e classificar dígitos em tempo real.
