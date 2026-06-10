@@ -1,136 +1,274 @@
-<!-- ── Página HTML (embutida no script) ──────────────────────────── HTML_PAGINA = r"""-->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classificador de Dígitos — MLP MNIST</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Reset e Variáveis */
+    :root {
+      --bg-body: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #10b981;
+      --border-color: #e2e8f0;
+      --canvas-border: #cbd5e1;
+    }
+
+    *, *::before, *::after { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-main);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 28px 16px 40px;
+      padding: 40px 16px;
+      -webkit-font-smoothing: antialiased;
     }
-    h1 { font-size: 1.65rem; color: #f8fafc; margin-bottom: 4px; }
-    .subtitulo { color: #94a3b8; font-size: .88rem; margin-bottom: 28px; }
 
+    /* Cabeçalho */
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    h1 { 
+      font-size: 1.75rem; 
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main); 
+      margin-bottom: 8px; 
+    }
+
+    .subtitulo { 
+      color: var(--text-muted); 
+      font-size: 0.95rem; 
+      font-weight: 400;
+    }
+
+    /* Layout Principal */
     .painel {
       display: flex;
-      gap: 20px;
+      gap: 24px;
       flex-wrap: wrap;
       justify-content: center;
       width: 100%;
-      max-width: 780px;
+      max-width: 800px;
     }
+
     .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 14px;
-      padding: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
       flex: 1;
-      min-width: 270px;
+      min-width: 280px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     }
-    h2 { font-size: .98rem; color: #cbd5e1; margin-bottom: 14px; }
 
-    canvas {
-      display: block;
-      border-radius: 10px;
-      cursor: crosshair;
-      touch-action: none;
-      border: 2px solid #475569;
-      transition: border-color .2s;
-      max-width: 100%;
-    }
-    canvas:hover { border-color: #60a5fa; }
-
-    .botoes { display: flex; gap: 10px; margin-top: 12px; }
-    button {
-      flex: 1;
-      padding: 11px;
-      border: none;
-      border-radius: 8px;
-      font-size: .9rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity .15s, transform .1s;
-    }
-    button:active { transform: scale(.97); }
-    #btnClassificar { background: #3b82f6; color: #fff; }
-    #btnLimpar      { background: #374151; color: #d1d5db; }
-
-    .resultado-centro { text-align: center; padding: 10px 0 16px; }
-    .digito-grande {
-      font-size: 5.5rem;
-      font-weight: 900;
-      color: #60a5fa;
-      line-height: 1;
-    }
-    .confianca { color: #86efac; font-size: 1.05rem; margin-top: 4px; }
-
-    .barra-row {
+    h2 { 
+      font-size: 1.05rem; 
+      font-weight: 600;
+      color: var(--text-main); 
+      margin-bottom: 16px; 
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 8px;
-      font-size: .82rem;
     }
-    .barra-label { width: 16px; text-align: right; color: #94a3b8; font-weight: 600; }
+
+    /* Área do Canvas */
+    .canvas-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    canvas {
+      display: block;
+      border-radius: 12px;
+      cursor: crosshair;
+      touch-action: none;
+      /* Mantemos a borda neutra, o JS cuidará de pintar o fundo de preto */
+      border: 2px solid var(--canvas-border);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      max-width: 100%;
+    }
+
+    canvas:hover { 
+      border-color: var(--primary); 
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    /* Botões */
+    .botoes { 
+      display: flex; 
+      gap: 12px; 
+      margin-top: 20px; 
+      width: 100%;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    button:active { transform: translateY(1px); }
+
+    #btnClassificar { 
+      background: var(--primary); 
+      color: #fff; 
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+    
+    #btnClassificar:hover {
+      background: var(--primary-hover);
+    }
+
+    #btnLimpar { 
+      background: #f1f5f9; 
+      color: #475569; 
+      border: 1px solid #e2e8f0;
+    }
+
+    #btnLimpar:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    /* Textos Auxiliares */
+    .dica { color: var(--text-muted); font-size: 0.85rem; margin-top: 16px; text-align: center; }
+    .atalhos { color: #94a3b8; font-size: 0.75rem; text-align: center; margin-top: 6px; }
+    #status { min-height: 20px; font-size: 0.85rem; font-weight: 500; color: #d97706; margin-top: 12px; text-align: center; }
+
+    /* Resultados */
+    .resultado-centro { 
+      text-align: center; 
+      padding: 16px 0 24px; 
+      background: #f8fafc;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      border: 1px dashed var(--border-color);
+    }
+
+    .digito-grande {
+      font-size: 6rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .confianca { 
+      color: var(--success); 
+      font-size: 1rem; 
+      font-weight: 600;
+      margin-top: 8px; 
+    }
+
+    /* Barras de Probabilidade */
+    .barra-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+
+    .barra-label { 
+      width: 16px; 
+      text-align: right; 
+      color: var(--text-main); 
+      font-weight: 600; 
+    }
+
     .barra-bg {
       flex: 1;
-      background: #0f172a;
-      border-radius: 4px;
-      height: 15px;
+      background: #f1f5f9;
+      border-radius: 99px;
+      height: 10px;
       overflow: hidden;
     }
+
     .barra-fill {
       height: 100%;
-      border-radius: 4px;
-      background: #3b82f6;
-      transition: width .45s ease;
+      border-radius: 99px;
+      background: #93c5fd;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
     }
-    .barra-fill.destaque { background: #22c55e; }
-    .barra-pct { width: 44px; text-align: right; color: #cbd5e1; font-size: .8rem; }
 
-    .dica    { color: #64748b; font-size: .78rem; margin-top: 10px; text-align: center; }
-    #status  { min-height: 20px; font-size: .83rem; color: #fbbf24; margin-top: 8px; text-align: center; }
-    .atalhos { color: #475569; font-size: .76rem; text-align: center; margin-top: 4px; }
+    .barra-fill.destaque { background: var(--success); }
+    
+    .barra-pct { 
+      width: 48px; 
+      text-align: right; 
+      color: var(--text-muted); 
+      font-size: 0.85rem;
+      font-variant-numeric: tabular-nums;
+    }
   </style>
 </head>
 <body>
 
-<h1>     Classificador de Dígitos Manuscritos</h1>
-<p class="subtitulo">Rede Neural MLP treinada no dataset MNIST — 60.000 exemplos</p>
+<header>
+  <h1>Classificador de Dígitos</h1>
+  <p class="subtitulo">Rede Neural MLP treinada no dataset MNIST — 60.000 exemplos</p>
+</header>
 
 <div class="painel">
 
-  <!-- ── Área de desenho ─────────────────────────────────── -->
-  <div class="card" style="max-width:310px">
-    <h2>     Desenhe um dígito (0–9)</h2>
+  <div class="card canvas-container" style="max-width: 320px;">
+    <h2>
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+      Desenhe um dígito (0–9)
+    </h2>
     <canvas id="canvas" width="260" height="260"></canvas>
     <div class="botoes">
-      <button id="btnClassificar" onclick="classificar()">   Classificar</button>
-      <button id="btnLimpar"      onclick="limpar()">✕ Limpar</button>
+      <button id="btnClassificar" onclick="classificar()">Classificar</button>
+      <button id="btnLimpar" onclick="limpar()">Limpar</button>
     </div>
-    <p class="dica">Desenhe com traços largos no centro do quadro</p>
+    <p class="dica">Desenhe com traços largos no centro do quadro.</p>
     <p class="atalhos">Enter = classificar &nbsp;|&nbsp; Esc = limpar</p>
     <p id="status"></p>
   </div>
 
-  <!-- ── Painel de resultado ─────────────────────────────── -->
-  <div class="card" style="flex:1; min-width:250px">
-    <h2>     Dígito Reconhecido</h2>
+  <div class="card" style="flex:1; min-width: 300px;">
+    <h2>
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      Resultado
+    </h2>
     <div class="resultado-centro">
       <div class="digito-grande" id="digitoGrande">—</div>
-      <div class="confianca"     id="confiancaTxt"></div>
+      <div class="confianca" id="confiancaTxt"></div>
     </div>
 
-    <h2 style="margin-top:14px">    Probabilidades por Classe</h2>
+    <h2 style="margin-top:20px; font-size: 0.95rem; color: var(--text-muted);">Probabilidades por Classe</h2>
     <div id="barras"></div>
   </div>
 
@@ -144,7 +282,6 @@ const ctx      = canvas.getContext("2d");
 const statusEl = document.getElementById("status");
 let desenhando = false;
 
-// ── Posição correta mesmo com zoom / scroll ──────────────────────
 function posNoCanvas(e) {
   const rect   = canvas.getBoundingClientRect();
   const escX   = canvas.width  / rect.width;
@@ -156,13 +293,11 @@ function posNoCanvas(e) {
   };
 }
 
-// ── Configuração do pincel ───────────────────────────────────────
-ctx.lineWidth   = 20;       // traço grosso ajuda o reconhecimento
+ctx.lineWidth   = 20;       
 ctx.lineCap     = "round";
 ctx.lineJoin    = "round";
-ctx.strokeStyle = "#ffffff"; // branco sobre fundo preto (padrão MNIST)
+ctx.strokeStyle = "#ffffff"; 
 
-// ── Inicialização ────────────────────────────────────────────────
 function limpar() {
   ctx.fillStyle = "#000000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -173,7 +308,6 @@ function limpar() {
 }
 limpar();
 
-// ── Eventos de mouse ─────────────────────────────────────────────
 canvas.addEventListener("mousedown", e => {
   desenhando = true;
   const p = posNoCanvas(e);
@@ -187,7 +321,6 @@ canvas.addEventListener("mousemove", e => {
 canvas.addEventListener("mouseup",    () => { desenhando = false; });
 canvas.addEventListener("mouseleave", () => { desenhando = false; });
 
-// ── Eventos de toque (celular / tablet) ─────────────────────────
 canvas.addEventListener("touchstart", e => {
   e.preventDefault(); desenhando = true;
   const p = posNoCanvas(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
@@ -198,13 +331,11 @@ canvas.addEventListener("touchmove", e => {
 }, { passive: false });
 canvas.addEventListener("touchend", () => { desenhando = false; });
 
-// ── Atalhos de teclado ───────────────────────────────────────────
 document.addEventListener("keydown", e => {
   if (e.key === "Enter")  classificar();
   if (e.key === "Escape" || e.key === "Delete") limpar();
 });
 
-// ── Barras de probabilidade ──────────────────────────────────────
 function inicializarBarras() {
   const c = document.getElementById("barras");
   c.innerHTML = "";
@@ -221,7 +352,6 @@ function inicializarBarras() {
 }
 inicializarBarras();
 
-// ── Envia imagem ao servidor Python e exibe resultado ────────────
 async function classificar() {
   statusEl.textContent = "⏳ Analisando...";
   const imagemBase64 = canvas.toDataURL("image/png");
@@ -235,7 +365,7 @@ async function classificar() {
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const d = await resp.json();
 
-    if (d.erro) { statusEl.textContent = "Erro " + d.erro; return; }
+    if (d.erro) { statusEl.textContent = "Erro: " + d.erro; return; }
 
     document.getElementById("digitoGrande").textContent = d.digito;
     document.getElementById("confiancaTxt").textContent =
@@ -251,7 +381,7 @@ async function classificar() {
     });
 
   } catch (err) {
-    statusEl.textContent = "    Erro: " + err.message;
+    statusEl.textContent = "Erro: " + err.message;
   }
 }
 </script>
